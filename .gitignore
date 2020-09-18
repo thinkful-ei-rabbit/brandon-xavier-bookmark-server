@@ -3,3 +3,4 @@ echo "NODE_ENV=development" > .env
 # using >> to append content
 echo ".env" >> .gitignore
 *.log
+.env

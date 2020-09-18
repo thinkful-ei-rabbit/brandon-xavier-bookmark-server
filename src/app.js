@@ -5,7 +5,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const { NODE_ENV } = require("./config");
 const winston = require("winston");
-const { v4: uuid } = require('uuid');
+const { v4: uuid } = require("uuid");
 const app = express();
 
 const morganOption = NODE_ENV === "production" ? "tiny" : "common";
@@ -54,6 +54,19 @@ app.get("/bookmarks", (req, res) => {
   res.json(bookmarks);
 });
 
+app.get("/bookmarks/:id", (req, res) => {
+  const { id } = req.params;
+  const bookmark = bookmarks.find((c) => c.id == id);
+
+  // make sure we found a card
+  if (!bookmark) {
+    logger.error(`bookmark with id ${id} not found.`);
+    return res.status(404).send("Bookmark Not Found");
+  }
+
+  res.json(bookmark);
+});
+
 app.post("/bookmarks", express.json(), (req, res) => {
   const { title, desc, rating, url } = req.body;
   const id = uuid();
@@ -79,6 +92,21 @@ app.post("/bookmarks", express.json(), (req, res) => {
 
   bookmarks.push(newBookmark);
   res.json(bookmarks);
+});
+
+app.delete("/bookmarks/:id", (req, res) => {
+  const { id } = req.params;
+
+  const index = bookmarks.findIndex((u) => u.id === id);
+
+  // make sure we actually find a user with that id
+  if (index === -1) {
+    return res.status(404).send("bookmark not found");
+  }
+
+  bookmarks.splice(index, 1);
+
+  res.send("bookmark deleted");
 });
 
 app.use(function errorHandler(error, req, res, next) {
